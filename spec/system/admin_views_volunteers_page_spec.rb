@@ -82,7 +82,7 @@ RSpec.describe "admin views Volunteers page", type: :system do
   end
 
   it "can go to the volunteer edit page from the volunteer list" do
-    create(:volunteer, casa_org: organization)
+    create(:volunteer, :with_assigned_supervisor, casa_org: organization)
     sign_in admin
 
     visit volunteers_path
@@ -111,6 +111,8 @@ RSpec.describe "admin views Volunteers page", type: :system do
       sign_in admin
 
       visit volunteers_path
+      click_on "Supervisor"
+      find(:css, "#unassigned-vol-filter").set(true)
       supervisor_cell = page.find(".supervisor-column")
 
       expect(supervisor_cell.text).to eq ""
@@ -128,12 +130,13 @@ RSpec.describe "admin views Volunteers page", type: :system do
       expect(supervisor_cell.text).to eq name
     end
 
-    it "is blank when volunteer has been unassigned from supervisor" do
-      volunteer = create(:volunteer, casa_org: organization)
-      create(:supervisor_volunteer, volunteer: volunteer, is_active: false)
+    it "is blank when volunteer's supervisor is inactive" do
+      volunteer = create(:volunteer, :with_inactive_supervisor, casa_org: organization)
       sign_in admin
 
       visit volunteers_path
+      click_on "Supervisor"
+      find(:css, "#unassigned-vol-filter").set(true)
       supervisor_cell = page.find(".supervisor-column")
 
       expect(supervisor_cell.text).to eq ""
